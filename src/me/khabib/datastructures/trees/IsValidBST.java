@@ -1,11 +1,19 @@
 package me.khabib.datastructures.trees;
 
+/**
+ * https://leetcode.com/problems/validate-binary-search-tree/
+ */
 public class IsValidBST {
     public boolean isValidBST(TreeNode root) {
-        if (root==null) return true;
-        if (root.left!=null && root.left.val>=root.val) return false;
-        if (root.right!=null && root.right.val<=root.val) return false;
-        return isValidBST(root.left) && isValidBST(root.right);
+        return helper(root, null, null);
+    }
+
+    private boolean helper(TreeNode node, Integer lower, Integer upper) {
+        if (node==null) return true;
+        if (lower != null && node.val <= lower) return false;
+        if (upper != null && node.val >= upper) return false;
+
+        return helper(node.left, lower, node.val) && helper(node.right, node.val, upper);
     }
 
     public static void main(String[] args) {
