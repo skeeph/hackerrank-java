@@ -8,26 +8,27 @@ import java.util.PriorityQueue;
  */
 public class LastStoneWeight {
     public int lastStoneWeight(int[] stones) {
-        PriorityQueue<Integer> pq = new PriorityQueue<>(Comparator.reverseOrder());
+//        PriorityQueue<Integer> pq = new PriorityQueue<>(Comparator.reverseOrder());
+        Heap pq = new Heap(new int[]{});
         for (int stone : stones) {
-            pq.add(stone);
+            pq.insert(stone);
         }
 
         while (pq.size() > 1) {
-            Integer large = pq.poll();
-            Integer small = pq.poll();
+            Integer large = pq.getMax();
+            Integer small = pq.getMax();
             if (!large.equals(small)) {
-                pq.add(large - small);
+                pq.insert(large - small);
             }
         }
 
-        return pq.size() == 1 ? pq.poll() : 0;
+        return pq.size() == 1 ? pq.getMax() : 0;
     }
 
 
     public static void main(String[] args) {
         System.out.println(new LastStoneWeight().lastStoneWeight(new int[]{
-                2, 2
+                2,7,4,1,8,1
         }));
     }
 }
