@@ -2,15 +2,24 @@ package me.career.treengraph;
 
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 /**
  * CCIn 4.7
  */
 public class TopologicalSort {
+    private static class CycleException extends RuntimeException {
+
+    }
+
+    public static final Integer WHITE=0;
+    public static final Integer GRAY=1;
+    public static final Integer BLACK=2;
+
     static class Graph<T> {
         private final Map<T, List<T>>
                 edges;
-        private List<T> vertices;
+        private final List<T> vertices;
 
         public Graph(List<T> vertices) {
             this.vertices = Collections.unmodifiableList(vertices);
@@ -24,52 +33,73 @@ public class TopologicalSort {
 
 
         public List<T> topologicalSort() {
-            Stack<T> stack = new Stack<T>();
-            Map<T, Boolean> visited = new HashMap<>();
-            vertices.forEach(x -> visited.putIfAbsent(x, false));
+            Stack<T> stack = new Stack<>();
+            Map<T, Integer> visited = new HashMap<>();
+            vertices.forEach(x -> visited.putIfAbsent(x, WHITE));
 
             for (T vertex : vertices) {
-                if (!visited.get(vertex))
-                    topologicalSortUtil(vertex, visited, stack);
+                topologicalSortUtil(vertex, visited, stack);
             }
 
             return new ArrayList<>(stack);
         }
 
-        private void topologicalSortUtil(T vertex, Map<T, Boolean> visited, Stack<T> stack) {
-            visited.put(vertex, true);
-            for (T adj : edges.get(vertex)) {
-                if (!visited.get(adj)) {
-                    topologicalSortUtil(adj, visited, stack);
-                }
-            }
+        private void topologicalSortUtil(T vertex, Map<T, Integer> visited, Stack<T> stack) {
+            if (GRAY.equals(visited.get(vertex))) throw new CycleException();
+            if (BLACK.equals(visited.get(vertex))) return;
 
+            visited.put(vertex, GRAY);
+            for (T adj : edges.get(vertex)) {
+                topologicalSortUtil(adj, visited, stack);
+            }
+            visited.put(vertex, BLACK);
             stack.push(vertex);
         }
     }
-
-    public List<String> topoSort(List<String> vertices, List<String[]> edges) {
-        Graph<String> graph = new Graph<>(vertices);
-        for (String[] edge : edges) {
-            if (edge.length != 2) throw new IllegalArgumentException("Для определения ребра нужны лишь 2 вершины");
-            graph.addEdge(edge[0], edge[1]);
+    public int[] findOrder(int numCourses, int[][] prerequisites) {
+        Graph<Integer> graph = readGraph(numCourses, prerequisites);
+        try {
+            return graph.topologicalSort().stream().mapToInt(x->x).toArray();
+        } catch (CycleException e) {
+            return new int[0];
         }
+    }
 
-        return graph.topologicalSort();
+
+    /**
+     * @param numCourses
+     * @param prerequisites
+     * @return
+     */
+    public boolean canFinish(int numCourses, int[][] prerequisites) {
+        Graph<Integer> graph = readGraph(numCourses, prerequisites);
+        try {
+            graph.topologicalSort();
+            return true;
+        } catch (CycleException e) {
+            return false;
+        }
+    }
+
+    private Graph<Integer> readGraph(int numCourses, int[][] prerequisites) {
+        List<Integer> vertices = IntStream.range(0, numCourses).boxed().collect(Collectors.toList());
+        Graph<Integer> graph = new Graph<>(vertices);
+        for (int[] prerequisite : prerequisites) {
+            graph.addEdge(prerequisite[0], prerequisite[1]);
+        }
+        return graph;
     }
 
 
     public static void main(String[] args) {
-        List<String> strings = new TopologicalSort().topoSort(
-                List.of("a", "b", "c", "d", "e", "f"),
-                List.of(
-                        new String[]{"d", "a"},
-                        new String[]{"b", "f"},
-                        new String[]{"d", "b"},
-                        new String[]{"a", "f"},
-                        new String[]{"f", "d"},
-                        new String[]{"c", "d"}
-                )
+        boolean strings = new TopologicalSort().canFinish(
+                4,
+                new int[][]{
+                        {1, 0},
+                        {2, 1},
+                        {3, 0},
+                        {2, 3}
+                }
         );
 
         System.out.println(strings);
