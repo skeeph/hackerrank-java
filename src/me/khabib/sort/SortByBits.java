@@ -9,7 +9,7 @@ import java.util.stream.IntStream;
  */
 public class SortByBits {
     public int[] sortByBits(int[] arr) {
-        return IntStream.of(arr).boxed().sorted(Comparator.comparingInt(this::countSetBits).thenComparing(Integer::compareTo)).mapToInt(x -> x).toArray();
+        return IntStream.of(arr).boxed().sorted(Comparator.comparingInt(Integer::bitCount).thenComparing(Integer::compareTo)).mapToInt(x -> x).toArray();
     }
 
     int countSetBits(int n) {
