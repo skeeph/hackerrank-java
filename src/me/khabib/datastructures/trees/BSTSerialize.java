@@ -1,37 +1,49 @@
 package me.khabib.datastructures.trees;
 
-import java.util.*;
-import java.util.stream.Collectors;
-
+/**
+ * https://leetcode.com/problems/serialize-and-deserialize-bst/
+ */
 public class BSTSerialize {
     public String serialize(TreeNode root) {
-        List<Integer> vals = new ArrayList<>();
-        Queue<TreeNode> nodes = new LinkedList<>();
-        nodes.add(root);
-        while (!nodes.isEmpty()) {
-            TreeNode current = nodes.poll();
-            if (current != null) {
-                nodes.add(current.left);
-                nodes.add(current.right);
-                vals.add(current.val);
-            } else {
-                vals.add(null);
+        StringBuffer sb = new StringBuffer();
+        makeString(root, sb);
+        return sb.toString();
+    }
+
+    public void makeString(TreeNode root, StringBuffer sb) {
+        if (root == null) return;
+        sb.append(root.val);
+        sb.append(" ");
+        makeString(root.left, sb);
+        makeString(root.right, sb);
+    }
+
+
+    public TreeNode deserialize(String data) {
+        if ("".equals(data.trim())) return null;
+        String[] str = data.split(" ");
+        TreeNode root = new TreeNode(Integer.parseInt(str[0]));
+        for (int i = 1; i < str.length; i++) {
+            TreeNode curr = root;
+            int val = Integer.parseInt(str[i]);
+            while (true) {
+                if (curr.val > val) {
+                    if (curr.left != null) {
+                        curr = curr.left;
+                    } else {
+                        curr.left = new TreeNode(val);
+                        break;
+                    }
+                } else {
+                    if (curr.right != null) {
+                        curr = curr.right;
+                    } else {
+                        curr.right = new TreeNode(val);
+                        break;
+                    }
+                }
             }
         }
-        return vals.stream().map(Objects::toString).collect(Collectors.joining(","));
-    }
-
-    // Decodes your encoded data to tree.
-    public TreeNode deserialize(String data) {
-        List<Integer> values = Arrays.stream(data.split(",")).map(x -> x.equals("null") ? null : Integer.valueOf(x)).collect(Collectors.toList());
-        return build(values.toArray(Integer[]::new), 0);
-    }
-
-    private static TreeNode build(Integer[] values, int k){
-        if (k>=values.length || values[k]==null) return null;
-        TreeNode root = new TreeNode(values[k]);
-        root.left=build(values,2*k+1);
-        root.right=build(values,2*k+2);
         return root;
     }
 
